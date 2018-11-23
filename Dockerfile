@@ -1,12 +1,14 @@
-FROM ubuntu:latest
+FROM python:3.7-alpine3.8
 LABEL maintainer="Thomás Marques"
-RUN apt-get update \
-    && apt-get install -y python3-pip python3-dev \
-    && cd /usr/local/bin \
-    && ln -s /usr/bin/python3 python \
-    && pip3 install --upgrade pip \
-    && mkdir /opt/discovery \
-    && pip install zeroconf
-COPY . /opt/discovery
-WORKDIR /opt/discovery
-ENTRYPOINT ["python3", "start.py"]
+
+WORKDIR /usr/src/app/
+
+# Instalar dependências
+COPY ./requirements.txt /usr/src/app/requirements.txt
+RUN pip3 install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Apenas para imagem de produção
+# COPY . /usr/src/app/
+
+CMD ["python3", "start.py"]
