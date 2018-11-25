@@ -27,6 +27,30 @@ services:
     volumes:
       - ~/Documents/Projetos/middleware/management_service/:/usr/src/app/
 
+  mongodb:
+    image: mvertes/alpine-mongo
+    container_name: database
+    ports:
+      - 27017:27017
+    networks: 
+      - dev-network
+    volumes: 
+      - ~/Documents/Projetos/middleware/data_management_service/db:/data/db
+
+  data_management:
+    build:
+      dockerfile: ./datamanagement.dockerfile
+      context: ../data_management_service
+    image: middleware/data_management_img
+    container_name: data_management
+    networks: 
+      - dev-network
+    depends_on:
+      - "mongodb"
+      - "discovery"
+    volumes:
+      - ~/Documents/Projetos/middleware/data_management_service/:/usr/src/app/
+
 networks: 
   dev-network:
     driver: bridge
