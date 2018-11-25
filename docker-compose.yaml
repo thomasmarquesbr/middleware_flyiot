@@ -1,0 +1,32 @@
+version: '3'
+services:
+
+  discovery:
+    build:
+      dockerfile: ./discovery.dockerfile
+      context: .
+    image: middleware/discovery_img
+    container_name: discovery
+    # ports:
+      # - "80:80"
+    networks:
+      - dev-network
+    volumes:
+      - ~/Documents/Projetos/middleware/discovery_service/:/usr/src/app/
+
+  management:
+    build:
+      dockerfile: ./management.dockerfile
+      context: ../management_service/
+    image: middleware/management_img
+    container_name: management
+    networks: 
+      - dev-network
+    depends_on:
+      - "discovery"
+    volumes:
+      - ~/Documents/Projetos/middleware/management_service/:/usr/src/app/
+
+networks: 
+  dev-network:
+    driver: bridge
