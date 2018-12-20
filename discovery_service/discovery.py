@@ -4,8 +4,12 @@ import sys
 import const
 from time import sleep
 from typing import cast
+import json
 
 from zeroconf import ServiceBrowser, ServiceStateChange, Zeroconf
+
+services_on = []
+
 
 def on_service_state_change(
     zeroconf: Zeroconf, service_type: str, name: str, state_change: ServiceStateChange,
@@ -16,6 +20,7 @@ def on_service_state_change(
         if state_change is ServiceStateChange.Added:
             info = zeroconf.get_service_info(service_type, name)
             if info:
+                services_on.append(name)
                 print("  Address: %s:%d" % (socket.inet_ntoa(cast(bytes, info.address)), cast(int, info.port)))
                 # print("  Weight: %d, priority: %d" % (info.weight, info.priority))
                 # print("  Server: %s" % (info.server,))
