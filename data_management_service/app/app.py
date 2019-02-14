@@ -1,30 +1,18 @@
 from flask import Flask, jsonify, abort, request, make_response
 from flask_pymongo import PyMongo
-from dao import ThingsDao, ServicesDao
 from bson import ObjectId
+
+from utils import json_response, MongoJsonEncoder
 from config import *
-import json
+from models import Service, Service_Type
 
 
-def json_response(obj, cls=None):
-    response = make_response(json.dumps(obj, cls=cls))
-    response.content_type = 'application/json'
-    return response
-    
-
-class MongoJsonEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, ObjectId):
-            return str(obj)
-
-        return json.JSONEncoder.default(self, obj)
 
 app = Flask(__name__)
-
-thingsDao = ThingsDao()
-servicesDao = ServicesDao()
 app.config["MONGO_URI"] = "mongodb://{}:{}/{}".format(URL_MONGO, PORT_MONGO, DB_MONGO)
 mongo = PyMongo(app)
+
+service = Service("3kwls", "serviço1", Service_Type.DISCOVERY, '329.168.0.2')
 
 
 # @auth.error_handler
@@ -49,6 +37,9 @@ def get_services():
     return jsonify({'message': 'Hello World'})
 
 
+## SERVICES ##
+
+
 ## RESOURCES ##
 @app.route('/resources', methods=['GET'])
 def get_resources():
@@ -66,13 +57,13 @@ def get_resource(resource_id):
         return json_response(res, cls=MongoJsonEncoder), 200
 
 
-@app.route('/resources/<resource_name>', methods=['GET'])
+@app.route('/resources/search/<resource_name>', methods=['GET'])
 def get_resource_by_name(resource_name):
     if not isinstance(resource_name, str):
         abort(400)
     else:
-        resources = [resource for resource in mongo.db.resources.find({'_id': ObjectId(resource_id)})]
-        return json_response(res, cls=MongoJsonEncoder), 200
+        resources = [resource for resource in mongo.db.resources.find({'name': resource_name})]
+        return json_response(resources, cls=MongoJsonEncoder), 200
 
 
 @app.route('/resources', methods=['POST'])
