@@ -19,6 +19,11 @@ class MongoJsonEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+class TransportJsonEncoder(json.JSONEncoder):
+    def default(self, o):
+        return {k.lstrip('_'): v for k, v in vars(o).items()}
+
+
 ## NETWORK ##
 def is_valid_ip(ip_addr):
     try:

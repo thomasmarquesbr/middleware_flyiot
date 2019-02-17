@@ -37,11 +37,10 @@ class Service(object):
     @service_type.setter
     def service_type(self, t):
         if not isinstance(t, Service_Type): raise Exception("Service_type inválido")
-        self._description = t
+        self._service_type = t.name
 
     @ip.setter
     def ip(self, i):
-        # if not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",i): 
         if not is_valid_ip(i):
             raise Exception("ip Inválido")
         self._ip = i
