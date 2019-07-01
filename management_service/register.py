@@ -1,7 +1,7 @@
 import logging
 import socket
 import sys
-import const
+from management_service.const import *
 from time import sleep
 
 from zeroconf import ServiceInfo, Zeroconf
@@ -17,7 +17,7 @@ if __name__ == '__main__':
         'property2': 'value2'}
 
     info = ServiceInfo("_http._tcp.local.",
-                       const.MIDDLEWARE_NAME+"."+const.SERVICE_NAME+"._http._tcp.local.",
+                       MIDDLEWARE_NAME+"."+SERVICE_NAME+"._http._tcp.local.",
                        socket.inet_aton("127.0.0.1"), 80, 0, 0,
                        desc, "ash-2.local.")
 

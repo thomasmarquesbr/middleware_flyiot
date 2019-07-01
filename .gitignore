@@ -115,3 +115,5 @@ dmypy.json
 .pyre/
 
 .idea/
+
+/data_management_service/db

@@ -2,10 +2,10 @@ from flask import make_response
 from bson import ObjectId
 import ipaddress
 import json
+import socket
 
 
-
-## JSON ##
+# JSON
 def json_response(obj, cls=None):
     response = make_response(json.dumps(obj, cls=cls))
     response.content_type = 'application/json'
@@ -24,10 +24,15 @@ class TransportJsonEncoder(json.JSONEncoder):
         return {k.lstrip('_'): v for k, v in vars(o).items()}
 
 
-## NETWORK ##
+# NETWORK
 def is_valid_ip(ip_addr):
     try:
         ipaddress.ip_address(ip_addr)
         return 1
     except:
         return 0
+
+
+def get_address_ip():
+    hostname = socket.gethostname()
+    return str(socket.gethostbyname(hostname))
