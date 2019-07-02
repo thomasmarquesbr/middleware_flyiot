@@ -1,5 +1,5 @@
-from data_management_service.app.utils import *
-from data_management_service.app.const import *
+from data_management_service.utils import *
+from data_management_service.const import *
 import sys
 from time import sleep
 from zeroconf import ServiceInfo, Zeroconf

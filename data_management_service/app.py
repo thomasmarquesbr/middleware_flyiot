@@ -1,19 +1,12 @@
-from flask import Flask, jsonify, abort, request, make_response
+from flask import Flask, jsonify, abort, request
 from flask_pymongo import PyMongo
-from flask_jwt import JWT, jwt_required, current_identity
+from flask_jwt import JWT, jwt_required
 from werkzeug.security import safe_str_cmp
 import datetime
-import os
-import uuid
-from bson import ObjectId
-import json
 
-from data_management_service.app.utils import *
-from data_management_service.app.const import *
-from data_management_service.app.models import *
-import subprocess
+from data_management_service.utils import *
+from data_management_service.const import *
 import sys
-import threading
 
 # class User(object):
 #     def __init__(self, id, username, password):
@@ -32,12 +25,12 @@ import threading
 # username_table = {u.username: u for u in users}
 # userid_table = {u.id: u for u in users}
 
+ID = sys.argv[1]
+PORT = sys.argv[2]
 
-ID = str(uuid.uuid1())
-PORT = str(8080)
-
-
-os.system("python3 register.py " + ID + " " + PORT + " &")
+# os.system("python3 register.py " + ID + " " + PORT + " &")
+print("Iniciando Data Management Service")
+# subprocess.Popen(["python3.5", "register.py"] + [ID, PORT])
 
 
 user_auth = "user1"
