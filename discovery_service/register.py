@@ -1,5 +1,6 @@
-from discovery_service.discovery import *
-from discovery_service.utils import *
+from discovery import *
+from utils import *
+from const import *
 from time import sleep
 from zeroconf import ServiceInfo, Zeroconf
 
@@ -8,7 +9,6 @@ ID = sys.argv[1]
 ADDRESS = get_address_ip()
 PORT = sys.argv[2]
 ENTRYPOINT = "/"
-
 
 data = {
     "id": ID,
@@ -30,6 +30,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         pass
     finally:
-        print("Cancelando o registro...")
+        print("Cancelando o registro...\n")
         zeroconf.unregister_service(service_info)
         zeroconf.close()

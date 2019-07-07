@@ -3,6 +3,7 @@ from bson import ObjectId
 import ipaddress
 import json
 import socket
+import os
 
 
 # JSON
@@ -36,3 +37,7 @@ def is_valid_ip(ip_addr):
 def get_address_ip():
     hostname = socket.gethostname()
     return str(socket.gethostbyname(hostname))
+
+
+def is_reachable(host):
+    return True if os.system("ping -c 1 " + host) is 0 else False

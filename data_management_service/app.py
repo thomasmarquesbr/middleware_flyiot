@@ -1,11 +1,10 @@
+from utils import *
+from const import *
 from flask import Flask, jsonify, abort, request
 from flask_pymongo import PyMongo
 from flask_jwt import JWT, jwt_required
 from werkzeug.security import safe_str_cmp
 import datetime
-
-from data_management_service.utils import *
-from data_management_service.const import *
 import sys
 
 # class User(object):
@@ -80,7 +79,7 @@ def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
-@app.route('/hello')
+@app.route('/')
 def get_hello():
     return jsonify({'message': 'Hello World'})
 
@@ -151,54 +150,54 @@ def delete_thing(thing_id):
         return json_response({'message': 'Thing removido com sucesso'}, cls=MongoJsonEncoder)
 
 
-## DEVICES ##
-@app.route('/devices', methods=['GET'])
-def get_devices():
-    devices = [device for device in mongo.db.devices.find()]
-    return json_response(devices, cls=MongoJsonEncoder), 200
-
-
-@app.route('/devices/<device_id>', methods=['GET'])
-def get_device(device_id):
-    if not isinstance(device_id, str):
-        abort(400)
-    else:
-        result = mongo.db.devices.find_one({'_id': ObjectId(device_id)})
-        res = result if result else {}
-        return json_response(res, cls=MongoJsonEncoder), 200
-
-
-@app.route('/devices', methods=['POST'])
-def add_device():
-    device = request.json
-    if not device:
-        abort(400)
-    mongo.db.devices.insert_one(device)
-    return json_response(device, cls=MongoJsonEncoder), 201
-
-
-@app.route('/devices/<device_id>', methods=['PUT'])
-def update_device(device_id):
-    device = request.json
-    if not device or not isinstance(device_id, str):
-        abort(400)
-    else:
-        result = mongo.db.devices.update_one(
-            {'_id': ObjectId(device_id)}, {'$set': device})
-        device['_id'] = ObjectId(device_id)
-        res = device if result.matched_count > 0 else {}
-        return json_response(res, cls=MongoJsonEncoder), 200
-
-
-@app.route('/devices/<device_id>', methods=['DELETE'])
-def delete_device(device_id):
-    if not isinstance(device_id, str):
-        abort(400)
-    else:
-        result = mongo.db.devices.delete_one({'_id': ObjectId(device_id)})
-        if result.deleted_count is 0:
-            abort(404)
-        return json_response({'message': 'Device removed successfully'}, cls=MongoJsonEncoder)
+# ## DEVICES ##
+# @app.route('/devices', methods=['GET'])
+# def get_devices():
+#     devices = [device for device in mongo.db.devices.find()]
+#     return json_response(devices, cls=MongoJsonEncoder), 200
+#
+#
+# @app.route('/devices/<device_id>', methods=['GET'])
+# def get_device(device_id):
+#     if not isinstance(device_id, str):
+#         abort(400)
+#     else:
+#         result = mongo.db.devices.find_one({'_id': ObjectId(device_id)})
+#         res = result if result else {}
+#         return json_response(res, cls=MongoJsonEncoder), 200
+#
+#
+# @app.route('/devices', methods=['POST'])
+# def add_device():
+#     device = request.json
+#     if not device:
+#         abort(400)
+#     mongo.db.devices.insert_one(device)
+#     return json_response(device, cls=MongoJsonEncoder), 201
+#
+#
+# @app.route('/devices/<device_id>', methods=['PUT'])
+# def update_device(device_id):
+#     device = request.json
+#     if not device or not isinstance(device_id, str):
+#         abort(400)
+#     else:
+#         result = mongo.db.devices.update_one(
+#             {'_id': ObjectId(device_id)}, {'$set': device})
+#         device['_id'] = ObjectId(device_id)
+#         res = device if result.matched_count > 0 else {}
+#         return json_response(res, cls=MongoJsonEncoder), 200
+#
+#
+# @app.route('/devices/<device_id>', methods=['DELETE'])
+# def delete_device(device_id):
+#     if not isinstance(device_id, str):
+#         abort(400)
+#     else:
+#         result = mongo.db.devices.delete_one({'_id': ObjectId(device_id)})
+#         if result.deleted_count is 0:
+#             abort(404)
+#         return json_response({'message': 'Device removed successfully'}, cls=MongoJsonEncoder)
 
 
 ## SERVICES ##
@@ -255,12 +254,26 @@ def delete_service(service_id):
     if not isinstance(service_id, str):
         abort(400)
     else:
-        result = mongo.db.services.delete_one({'_id': ObjectId(service_id)})
+        result = mongo.db.services.delete_many({'id': service_id})
         if result.deleted_count is 0:
             abort(404)
         return json_response({'message': 'Service removed successfully'}, cls=MongoJsonEncoder)
 
 
+@app.route('/services', methods=['DELETE'])
+def delete_all_services():
+    result = mongo.db.services.delete_many({})
+    if not result:
+        abort(400)
+    return json_response({'message': 'Services removed successfully'}, cls=MongoJsonEncoder)
+
+
 if __name__ == '__main__':
-    app.run(port=8080)
+    try:
+        app.run(port=8080)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        print("Cancelando a aplicação RESTful...\n")
+
 

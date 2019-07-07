@@ -1,43 +1,44 @@
-import logging
-import socket
-import sys
-from discovery_service.const import *
-from time import sleep
-from typing import cast
+from const import *
+from utils import *
 import json
+import logging
+import sys
 import requests
-
+from time import sleep
 from zeroconf import ServiceBrowser, ServiceStateChange, Zeroconf
-
 
 services_discovered = []
 list_data_management_service = []
-# headers = {"Accept": "application/json"}
+list_management_service = []
+headers = {
+    # 'Authorization' : ‘(some auth code)’,
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+}
 
 
 def add_resource_to_data_management(info):
+    global list_data_management_service
     if "service" in info["type"]:
         print("Service encontrado:")
         if "data_management" in info["type"]:
-            list_data_management_service.append(info["entrypoint"])
+            list_data_management_service.append(info)
+        elif "management_service" in info["type"]:
+            list_management_service.append(info["entrypoint"])
+            if info["entrypoint"] and len(list_data_management_service) > 0:
+                req = requests.post(info["entrypoint"]+"data_management", json=list_data_management_service[0], headers=headers)
+                print(req.json())
 
         if len(list_data_management_service) > 0:
-            data = json.dumps(info)
-            # print(data)
-            req = requests.post(list_data_management_service[0]+"services", json=data)
-            print(req.json())
+            # print("services >>> "+str(list_data_management_service))
+            for data_management in list_data_management_service:
+                req = requests.post(data_management["entrypoint"]+"services", json=info, headers=headers)
+                print(req.json())
+
     else:
         print("Thing encontrado:")
         # req = requests.delete("https://jsonplaceholder.typicode.com/todos/1")
     print(json.dumps(info, indent=2))
-
-
-def remove_service_to_data_management(info):
-    if "service" in info.type["type"]:
-        print("Removendo service:  > ")
-
-    else:
-        print("Removendo Thing:")
 
 
 def on_service_state_change(zeroconf: Zeroconf,
@@ -60,11 +61,10 @@ def on_service_state_change(zeroconf: Zeroconf,
                 print("  No info")
 
         elif state_change is ServiceStateChange.Removed:
-            service_info = zeroconf.get_service_info(service_type, name)
-            if service_info:
-                services_discovered.remove(name)
+            print("Removed")
 
-        print('\n\n')
+        print('\n')
+        # print(services_discovered)
 
 
 if __name__ == '__main__':
@@ -76,12 +76,11 @@ if __name__ == '__main__':
     zeroconf = Zeroconf()
     print("\nBrowsing services, press Ctrl-C to exit...\n")
     browser = ServiceBrowser(zeroconf, "_http._tcp.local.", handlers=[on_service_state_change])
-
     try:
         while True:
             sleep(0.1)
     except KeyboardInterrupt:
         pass
     finally:
+        print("Cancelando o discovery...\n")
         zeroconf.close()
-

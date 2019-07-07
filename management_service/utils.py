@@ -11,7 +11,7 @@ def json_response(obj, cls=None):
     response = make_response(json.dumps(obj, cls=cls))
     response.content_type = 'application/json'
     return response
-    
+
 
 class MongoJsonEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -40,9 +40,4 @@ def get_address_ip():
 
 
 def is_reachable(host):
-    response = os.system("ping -c 1 " + host)
-    if response == 0:
-        return True
-    else:
-        return False
-    # return True if os.system("ping -c 1 " + host) is 0 else False
+    return True if os.system("ping -c 1 " + host) is 0 else False

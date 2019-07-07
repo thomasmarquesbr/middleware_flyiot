@@ -1,35 +1,47 @@
-import logging
-import socket
+from utils import *
+from const import *
 import sys
-from management_service.const import *
 from time import sleep
-
 from zeroconf import ServiceInfo, Zeroconf
+import signal
+
+
+def handler(signum, frame):
+    finish()
+
+
+def finish():
+    print("Cancelando o registro...\n")
+    zeroconf.unregister_service(service_info)
+    zeroconf.close()
+
+
+ID = sys.argv[1]
+ADDRESS = get_address_ip()
+PORT = sys.argv[2]
+ENTRYPOINT = "/"
+
+
+data = {
+    "id": ID,
+    "type": SERVICE_TYPE,
+    # "entrypoint": "http://"+ADDRESS+":"+PORT+ENTRYPOINT
+    "entrypoint": "http://localhost:"+PORT+ENTRYPOINT
+}
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    if len(sys.argv) > 1:
-        assert sys.argv[1:] == ['--debug']
-        logging.getLogger('zeroconf').setLevel(logging.DEBUG)
-
-    desc = {
-        'property1': 'value1',
-        'property2': 'value2'}
-
-    info = ServiceInfo("_http._tcp.local.",
-                       MIDDLEWARE_NAME+"."+SERVICE_NAME+"._http._tcp.local.",
-                       socket.inet_aton("127.0.0.1"), 80, 0, 0,
-                       desc, "ash-2.local.")
-
+    service_info = ServiceInfo("_http._tcp.local.",
+                               ID + "." + MIDDLEWARE_NAME + "._http._tcp.local.",
+                               socket.inet_aton(ADDRESS), int(PORT), 0, 0,
+                               data, "ash-2.local.")
     zeroconf = Zeroconf()
-    print("Registration of a "+const.SERVICE_NAME+" Service, press Ctrl-C to exit...")
-    zeroconf.register_service(info)
+    print("Registro de um " + SERVICE_TYPE + "(" + ID + ")" + ", press Ctrl-C to exit...")
+    signal.signal(signal.SIGABRT, handler)
+    zeroconf.register_service(service_info)
     try:
         while True:
             sleep(0.1)
     except KeyboardInterrupt:
         pass
     finally:
-        print("Unregistering...")
-        zeroconf.unregister_service(info)
-        zeroconf.close()
+        finish()
