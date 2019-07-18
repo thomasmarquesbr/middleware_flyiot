@@ -16,6 +16,7 @@ PORT = str(5000)
 
 subprocesses = [
     subprocess.Popen(["python3.7", "register.py"] + [ID, PORT]),
+    subprocess.Popen(["python3.7", "app.py"] + [ID, PORT]),
     subprocess.Popen(["python3.7", "discovery.py"])
 ]
 

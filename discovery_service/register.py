@@ -13,7 +13,8 @@ ENTRYPOINT = "/"
 data = {
     "id": ID,
     "type": SERVICE_TYPE,
-    "entrypoint": "http://"+ADDRESS+":"+PORT+ENTRYPOINT
+    # "entrypoint": "http://"+ADDRESS+":"+PORT+ENTRYPOINT
+    "entrypoint": "http://localhost:"+PORT+ENTRYPOINT
 }
 
 if __name__ == '__main__':

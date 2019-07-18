@@ -26,14 +26,20 @@ def add_resource_to_data_management(info):
         elif "management_service" in info["type"]:
             list_management_service.append(info["entrypoint"])
             if info["entrypoint"] and len(list_data_management_service) > 0:
-                req = requests.post(info["entrypoint"]+"data_management", json=list_data_management_service[0], headers=headers)
-                print(req.json())
+                try:
+                    req = requests.post(info["entrypoint"]+"data_management", json=list_data_management_service[0], headers=headers)
+                    print(req.json())
+                except requests.ConnectionError:
+                    print("Erro de conexão: "+info["entrypoint"]+"data_management")
 
         if len(list_data_management_service) > 0:
             # print("services >>> "+str(list_data_management_service))
             for data_management in list_data_management_service:
-                req = requests.post(data_management["entrypoint"]+"services", json=info, headers=headers)
-                print(req.json())
+                try:
+                    req = requests.post(data_management["entrypoint"]+"services", json=info, headers=headers)
+                    print(req.json())
+                except requests.ConnectionError:
+                    print("Erro de conexão: "+data_management["entrypoint"]+"services")
 
     else:
         print("Thing encontrado:")

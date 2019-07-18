@@ -24,6 +24,7 @@ import sys
 # username_table = {u.username: u for u in users}
 # userid_table = {u.id: u for u in users}
 
+
 ID = sys.argv[1]
 PORT = sys.argv[2]
 
@@ -212,7 +213,7 @@ def get_service(service_id):
     if not isinstance(service_id, str):
         abort(400)
     else:
-        result = mongo.db.services.find_one({'_id': ObjectId(service_id)})
+        result = mongo.db.services.find_one({'id': service_id})
         res = result if result else {}
         return json_response(res, cls=MongoJsonEncoder), 200
 
@@ -232,7 +233,11 @@ def add_service():
     service = request.json
     if not service:
         abort(400)
-    mongo.db.services.insert_one(service)
+    exists = mongo.db.services.find_one({'type': service['type']})
+    if exists:
+        mongo.db.services.update_one({'type': service['type']}, {'$set': service})
+    else:
+        mongo.db.services.insert_one(service)
     return json_response(service, cls=MongoJsonEncoder), 201
 
 
@@ -242,8 +247,7 @@ def update_service(service_id):
     if not service or not isinstance(service_id, str):
         abort(400)
     else:
-        result = mongo.db.services.update_one(
-            {'_id': ObjectId(service_id)}, {'$set': service})
+        result = mongo.db.services.update_one({'_id': ObjectId(service_id)}, {'$set': service})
         service['_id'] = ObjectId(service_id)
         res = service if result.matched_count > 0 else {}
         return json_response(res, cls=MongoJsonEncoder), 200
