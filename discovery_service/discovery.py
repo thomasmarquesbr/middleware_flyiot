@@ -31,9 +31,10 @@ def add_resource_to_data_management(info):
                     print(req.json())
                 except requests.ConnectionError:
                     print("Erro de conexão: "+info["entrypoint"]+"data_management")
+        elif "discovery_service" in info["type"]:
+            print("Discovery Service encontrado")
 
         if len(list_data_management_service) > 0:
-            # print("services >>> "+str(list_data_management_service))
             for data_management in list_data_management_service:
                 try:
                     req = requests.post(data_management["entrypoint"]+"services", json=info, headers=headers)
@@ -43,8 +44,17 @@ def add_resource_to_data_management(info):
 
     else:
         print("Thing encontrado:")
-        # req = requests.delete("https://jsonplaceholder.typicode.com/todos/1")
+        if info["entrypoint"] and len(list_data_management_service) > 0:
+            add_new_thing_discovered(list_data_management_service[0], info)
     print(json.dumps(info, indent=2))
+
+
+def add_new_thing_discovered(data_management, thing):
+    try:
+        req = requests.post(data_management['entrypoint']+"things", json=thing, headers=headers)
+        print(req.json)
+    except requests.ConnectionError:
+        print("Erro de conexão: " + data_management + "things")
 
 
 def on_service_state_change(zeroconf: Zeroconf,

@@ -6,6 +6,7 @@ from flask_jwt import JWT, jwt_required
 from werkzeug.security import safe_str_cmp
 import datetime
 import sys
+import requests
 
 # class User(object):
 #     def __init__(self, id, username, password):
@@ -123,8 +124,25 @@ def add_thing():
     thing = request.json
     if not thing:
         abort(400)
+    thing_exist = mongo.db.services.find_one({'id': thing['id']})
+    if thing_exist:
+        make_response({'message', 'Thing alread added'}, 304)
+    else:
+        save_thing(thing)
+        return json_response(thing, cls=MongoJsonEncoder), 201
+
+
+def save_thing(thing):
+    if thing['entrypoint']:
+        try:
+            req = requests.get(thing['entrypoint'], headers=headers)
+            info = req.json()
+            print(info)
+            for key, item in info:
+                thing[key] = item
+        except ConnectionError:
+            print("Erro de conexão: "+thing['entrypoint'])
     mongo.db.things.insert_one(thing)
-    return json_response(thing, cls=MongoJsonEncoder), 201
 
 
 @app.route('/things/<thing_id>', methods=['PUT'])
@@ -233,8 +251,8 @@ def add_service():
     service = request.json
     if not service:
         abort(400)
-    exists = mongo.db.services.find_one({'type': service['type']})
-    if exists:
+    service_exist = mongo.db.services.find_one({'type': service['type']})
+    if service_exist:
         mongo.db.services.update_one({'type': service['type']}, {'$set': service})
     else:
         mongo.db.services.insert_one(service)

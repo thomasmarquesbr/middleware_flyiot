@@ -5,7 +5,6 @@ from enum import Enum
 from utils import is_valid_ip
 
 
-
 class Service_Type(Enum):
     DISCOVERY = 1
     MANAGEMENT = 2
