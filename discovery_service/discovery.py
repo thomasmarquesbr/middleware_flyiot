@@ -17,7 +17,7 @@ headers = {
 }
 
 
-def add_resource_to_data_management(info):
+def save_new_resource_discovered(info):
     global list_data_management_service
     if "service" in info["type"]:
         print("Service encontrado:")
@@ -26,30 +26,38 @@ def add_resource_to_data_management(info):
         elif "management_service" in info["type"]:
             list_management_service.append(info["entrypoint"])
             if info["entrypoint"] and len(list_data_management_service) > 0:
-                try:
-                    req = requests.post(info["entrypoint"]+"data_management", json=list_data_management_service[0], headers=headers)
-                    print(req.json())
-                except requests.ConnectionError:
-                    print("Erro de conexão: "+info["entrypoint"]+"data_management")
+                add_new_data_management_discovered_to_management_service(info, list_data_management_service[0])
         elif "discovery_service" in info["type"]:
-            print("Discovery Service encontrado")
+            pass
 
         if len(list_data_management_service) > 0:
-            for data_management in list_data_management_service:
-                try:
-                    req = requests.post(data_management["entrypoint"]+"services", json=info, headers=headers)
-                    print(req.json())
-                except requests.ConnectionError:
-                    print("Erro de conexão: "+data_management["entrypoint"]+"services")
+            add_new_service_discovered_to_data_management(info, list_data_management_service)
 
     else:
         print("Thing encontrado:")
         if info["entrypoint"] and len(list_data_management_service) > 0:
-            add_new_thing_discovered(list_data_management_service[0], info)
+            add_new_thing_discovered_to_data_management(list_data_management_service[0], info)
     print(json.dumps(info, indent=2))
 
 
-def add_new_thing_discovered(data_management, thing):
+def add_new_data_management_discovered_to_management_service(management_service, data_management_service):
+    try:
+        req = requests.post(management_service["entrypoint"]+"data_management", json=data_management_service, headers=headers)
+        print(req.json())
+    except requests.ConnectionError:
+        print("Erro de conexão: "+management_service["entrypoint"]+" data_management")
+
+
+def add_new_service_discovered_to_data_management(service, data_management_services):
+    for data_management in data_management_services:
+        try:
+            req = requests.post(data_management["entrypoint"]+"services", json=service, headers=headers)
+            print(req.json())
+        except requests.ConnectionError:
+            print("Erro de conexão: "+data_management["entrypoint"]+"services")
+
+
+def add_new_thing_discovered_to_data_management(data_management, thing):
     try:
         req = requests.post(data_management['entrypoint']+"things", json=thing, headers=headers)
         print(req.json)
@@ -72,7 +80,7 @@ def on_service_state_change(zeroconf: Zeroconf,
                 properties = {}
                 for key, value in service_info.properties.items():
                     properties[key.decode("utf-8")] = value.decode("utf-8")
-                add_resource_to_data_management(properties)
+                save_new_resource_discovered(properties)
             else:
                 print("  No info")
 

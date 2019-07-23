@@ -1,6 +1,7 @@
 from utils import *
 from const import *
 from flask import Flask, jsonify, abort, request
+import datetime
 from flask_pymongo import PyMongo
 from flask_jwt import JWT, jwt_required
 from werkzeug.security import safe_str_cmp
@@ -52,6 +53,20 @@ def identity(payload):
     # return userid_table.get(user_id, None)
 
 
+def save_thing(thing):
+    if thing['entrypoint']:
+        try:
+            req = requests.get(thing['entrypoint'], headers=headers)
+            info = req.json()
+            timestamp = str(datetime.datetime.now())
+            thing.update({'timestamp': timestamp})
+            for key, item in info.items():
+                thing.update({key: item})
+        except ConnectionError:
+            print("Erro de conexão: "+thing['entrypoint'])
+    mongo.db.things.insert_one(thing)
+
+
 app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://{}:{}/{}".format(
     URL_MONGO, PORT_MONGO, DB_MONGO)
@@ -81,15 +96,88 @@ def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
+@app.route('/protected')
+@jwt_required()
+def protected():
+    return make_response(jsonify({'message': 'Hello World'}), 200)
+
+
 @app.route('/')
 def get_hello():
     return jsonify({'message': 'Hello World'})
 
 
-@app.route('/protected')
-@jwt_required()
-def protected():
-    return make_response(jsonify({'message': 'Hello World'}), 200)
+## SERVICES ##
+@app.route('/services', methods=['GET'])
+def get_services():
+    services = [service for service in mongo.db.services.find()]
+    return json_response(services, cls=MongoJsonEncoder), 200
+
+
+@app.route('/services/<service_id>', methods=['GET'])
+def get_service(service_id):
+    if not isinstance(service_id, str):
+        abort(400)
+    else:
+        result = mongo.db.services.find_one({'id': service_id})
+        res = result if result else {}
+        return json_response(res, cls=MongoJsonEncoder), 200
+
+
+@app.route('/services/search/<service_type>', methods=['GET'])
+def get_service_by_type(service_type):
+    if not isinstance(service_type, str):
+        abort(400)
+    else:
+        services = [service for service in mongo.db.services.find(
+            {'service_type': service_type})]
+        return json_response(services, cls=MongoJsonEncoder), 200
+
+
+@app.route('/services', methods=['POST'])
+def add_service():
+    service = request.json
+    if not service:
+        abort(400)
+    service_exist = mongo.db.services.find_one({'type': service['type']})
+    if service_exist:
+        mongo.db.services.update_one({'type': service['type']}, {'$set': service})
+    else:
+        timestamp = str(datetime.datetime.now())
+        service.update({'timestamp': timestamp})
+        mongo.db.services.insert_one(service)
+    return json_response(service, cls=MongoJsonEncoder), 201
+
+
+@app.route('/services/<service_id>', methods=['PUT'])
+def update_service(service_id):
+    service = request.json
+    result = mongo.db.services.update_one(
+        {'id': service_id}, {'$set': service}
+    )
+    if result.matched_count > 0:
+        return make_response(jsonify({'message': 'Service updated'}), 200)
+    else:
+        return make_response(jsonify({'message': 'Service not found'}), 404)
+
+
+@app.route('/services/<service_id>', methods=['DELETE'])
+def delete_service(service_id):
+    if not isinstance(service_id, str):
+        abort(400)
+    else:
+        result = mongo.db.services.delete_many({'id': service_id})
+        if result.deleted_count is 0:
+            abort(404)
+        return json_response({'message': 'Service removed successfully'}, cls=MongoJsonEncoder)
+
+
+@app.route('/services', methods=['DELETE'])
+def delete_all_services():
+    result = mongo.db.services.delete_many({})
+    if not result:
+        abort(400)
+    return json_response({'message': 'Services removed successfully'}, cls=MongoJsonEncoder)
 
 
 ## THINGS ##
@@ -104,7 +192,7 @@ def get_thing(thing_id):
     if not isinstance(thing_id, str):
         abort(400)
     else:
-        result = mongo.db.things.find_one({'_id': ObjectId(thing_id)})
+        result = mongo.db.things.find_one({'id': thing_id})
         res = result if result else {}
         return json_response(res, cls=MongoJsonEncoder), 200
 
@@ -124,7 +212,7 @@ def add_thing():
     thing = request.json
     if not thing:
         abort(400)
-    thing_exist = mongo.db.services.find_one({'id': thing['id']})
+    thing_exist = mongo.db.things.find_one({'id': thing['id']})
     if thing_exist:
         make_response({'message', 'Thing alread added'}, 304)
     else:
@@ -132,30 +220,16 @@ def add_thing():
         return json_response(thing, cls=MongoJsonEncoder), 201
 
 
-def save_thing(thing):
-    if thing['entrypoint']:
-        try:
-            req = requests.get(thing['entrypoint'], headers=headers)
-            info = req.json()
-            print(info)
-            for key, item in info:
-                thing[key] = item
-        except ConnectionError:
-            print("Erro de conexão: "+thing['entrypoint'])
-    mongo.db.things.insert_one(thing)
-
-
 @app.route('/things/<thing_id>', methods=['PUT'])
 def update_thing(thing_id):
     thing = request.json
-    if not thing or not isinstance(thing_id, str):
-        abort(400)
+    result = mongo.db.things.update_one(
+        {'id': thing_id}, {'$set': thing}
+    )
+    if result.matched_count > 0:
+        return make_response(jsonify({'message': 'Thing updated'}), 200)
     else:
-        result = mongo.db.things.update_one(
-            {'_id': ObjectId(thing_id)}, {'$set': thing})
-        thing['_id'] = ObjectId(thing_id)
-        res = thing if result.matched_count > 0 else {}
-        return json_response(res, cls=MongoJsonEncoder), 200
+        return make_response(jsonify({'message': 'Thing not found'}), 404)
 
 
 @app.route('/things/<thing_id>', methods=['DELETE'])
@@ -163,10 +237,18 @@ def delete_thing(thing_id):
     if not isinstance(thing_id, str):
         abort(400)
     else:
-        result = mongo.db.things.delete_one({'_id': ObjectId(thing_id)})
+        result = mongo.db.things.delete_one({'id': thing_id})
         if result.deleted_count is 0:
             abort(404)
         return json_response({'message': 'Thing removido com sucesso'}, cls=MongoJsonEncoder)
+
+
+@app.route('/things', methods=['DELETE'])
+def delete_all_things():
+    result = mongo.db.things.delete_many({})
+    if not result:
+        abort(400)
+    return json_response({'message': 'Things removed successfully'}, cls=MongoJsonEncoder)
 
 
 # ## DEVICES ##
@@ -217,77 +299,6 @@ def delete_thing(thing_id):
 #         if result.deleted_count is 0:
 #             abort(404)
 #         return json_response({'message': 'Device removed successfully'}, cls=MongoJsonEncoder)
-
-
-## SERVICES ##
-@app.route('/services', methods=['GET'])
-def get_services():
-    services = [service for service in mongo.db.services.find()]
-    return json_response(services, cls=MongoJsonEncoder), 200
-
-
-@app.route('/services/<service_id>', methods=['GET'])
-def get_service(service_id):
-    if not isinstance(service_id, str):
-        abort(400)
-    else:
-        result = mongo.db.services.find_one({'id': service_id})
-        res = result if result else {}
-        return json_response(res, cls=MongoJsonEncoder), 200
-
-
-@app.route('/services/search/<service_type>', methods=['GET'])
-def get_service_by_type(service_type):
-    if not isinstance(service_type, str):
-        abort(400)
-    else:
-        services = [service for service in mongo.db.services.find(
-            {'service_type': service_type})]
-        return json_response(services, cls=MongoJsonEncoder), 200
-
-
-@app.route('/services', methods=['POST'])
-def add_service():
-    service = request.json
-    if not service:
-        abort(400)
-    service_exist = mongo.db.services.find_one({'type': service['type']})
-    if service_exist:
-        mongo.db.services.update_one({'type': service['type']}, {'$set': service})
-    else:
-        mongo.db.services.insert_one(service)
-    return json_response(service, cls=MongoJsonEncoder), 201
-
-
-@app.route('/services/<service_id>', methods=['PUT'])
-def update_service(service_id):
-    service = request.json
-    if not service or not isinstance(service_id, str):
-        abort(400)
-    else:
-        result = mongo.db.services.update_one({'_id': ObjectId(service_id)}, {'$set': service})
-        service['_id'] = ObjectId(service_id)
-        res = service if result.matched_count > 0 else {}
-        return json_response(res, cls=MongoJsonEncoder), 200
-
-
-@app.route('/services/<service_id>', methods=['DELETE'])
-def delete_service(service_id):
-    if not isinstance(service_id, str):
-        abort(400)
-    else:
-        result = mongo.db.services.delete_many({'id': service_id})
-        if result.deleted_count is 0:
-            abort(404)
-        return json_response({'message': 'Service removed successfully'}, cls=MongoJsonEncoder)
-
-
-@app.route('/services', methods=['DELETE'])
-def delete_all_services():
-    result = mongo.db.services.delete_many({})
-    if not result:
-        abort(400)
-    return json_response({'message': 'Services removed successfully'}, cls=MongoJsonEncoder)
 
 
 if __name__ == '__main__':
