@@ -1,4 +1,4 @@
-from discovery import *
+import sys
 from utils import *
 from const import *
 from time import sleep
@@ -14,13 +14,13 @@ data = {
     "id": ID,
     "type": SERVICE_TYPE,
     # "entrypoint": "http://"+ADDRESS+":"+PORT+ENTRYPOINT
-    "entrypoint": "http://localhost:"+PORT+ENTRYPOINT
+    "entrypoint": ("http://localhost:" if DEBUG else ADDRESS)+PORT+ENTRYPOINT
 }
 
 if __name__ == '__main__':
     service_info = ServiceInfo("_http._tcp.local.",
                                ID + "." + MIDDLEWARE_NAME + "._http._tcp.local.",
-                               socket.inet_aton(ADDRESS), 5000, 0, 0,
+                               socket.inet_aton(ADDRESS), int(PORT), 0, 0,
                                data, "ash-2.local.")
     zeroconf = Zeroconf()
     print("Registro de um " + SERVICE_TYPE + "(" + ID + ")" + ", press Ctrl-C to exit...")

@@ -1,5 +1,6 @@
 import asyncio
 
+
 class ThingController(object):
     def __init__(self):
         print("Inicializa controller")

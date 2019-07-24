@@ -1,12 +1,12 @@
-from utils import *
-from const import *
-from flask import Flask, jsonify, abort, request
-import sys
-import threading
-import time
-import requests
-import subprocess
 import signal
+import subprocess
+import sys
+import time
+
+from flask import Flask, jsonify, abort, request
+
+from const import *
+from utils import *
 
 
 def signal_handling(signum, frame):
@@ -27,7 +27,8 @@ data_management_service = None
 process = None
 
 app = Flask(__name__)
-app.debug = True
+if DEBUG:
+    app.debug = True
 
 signal.signal(signal.SIGINT, signal_handling)
 

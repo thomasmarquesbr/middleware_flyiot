@@ -2,7 +2,7 @@ import sys
 from const import *
 from flask import Flask, jsonify, make_response, abort, request
 from controller import ThingController
-import json
+
 
 ID = sys.argv[1]
 PORT = sys.argv[2]

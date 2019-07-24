@@ -1,7 +1,9 @@
+from const import *
 import subprocess
 import uuid
 import sys
 import signal
+import random
 
 
 def signal_handling(signum, frame):
@@ -12,7 +14,7 @@ def signal_handling(signum, frame):
 
 
 ID = str(uuid.uuid1())
-PORT = str(8080)
+PORT = str(5001 if DEBUG else random.randint(49152, 65535))
 
 subprocesses = [
     subprocess.Popen(["python3.7", "register.py"] + [ID, PORT]),

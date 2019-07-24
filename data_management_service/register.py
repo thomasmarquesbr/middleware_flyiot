@@ -14,7 +14,7 @@ data = {
     "id": ID,
     "type": SERVICE_TYPE,
     # "entrypoint": "http://"+ADDRESS+":"+PORT+ENTRYPOINT
-    "entrypoint": "http://localhost:"+PORT+ENTRYPOINT
+    "entrypoint": ("http://localhost:" if DEBUG else ADDRESS)+PORT+ENTRYPOINT
 }
 
 if __name__ == '__main__':

@@ -11,4 +11,4 @@ RUN pip3 install --upgrade pip \
 # Apenas para imagem de produção
 # COPY . /usr/src/app/
 
-CMD ["python3", "app.py"]
+CMD ["python3", "main.py"]

@@ -70,7 +70,8 @@ def save_thing(thing):
 app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://{}:{}/{}".format(
     URL_MONGO, PORT_MONGO, DB_MONGO)
-app.debug = True
+if DEBUG:
+    app.debug = True
 app.config['SECRET_KEY'] = 'super-secret'
 app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(days=1)
 mongo = PyMongo(app)
@@ -303,7 +304,7 @@ def delete_all_things():
 
 if __name__ == '__main__':
     try:
-        app.run(port=8080)
+        app.run(port=PORT)
     except KeyboardInterrupt:
         pass
     finally:

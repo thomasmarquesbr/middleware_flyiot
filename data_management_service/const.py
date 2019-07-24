@@ -10,3 +10,5 @@ headers = {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
 }
+
+DEBUG = True

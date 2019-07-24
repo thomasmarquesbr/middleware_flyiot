@@ -1,4 +1,5 @@
 import sys
+from const import *
 from flask import Flask, jsonify
 
 
@@ -8,7 +9,8 @@ PORT = sys.argv[2]
 print("Iniciando Discovery Service")
 
 app = Flask(__name__)
-app.debug = True
+if DEBUG:
+    app.debug = True
 
 
 @app.route('/')
