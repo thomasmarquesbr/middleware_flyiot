@@ -1,0 +1,144 @@
+FlyIoTL:
+
+ things:
+
+  - thing: myThermometer
+    type: thermometer
+    params: [ 'temperature' ]
+
+  - thing: myUmiditySensor
+    type: umiditySensor
+
+  - thing: eastFan
+    type: fan
+    addr: 55AC567
+    
+  - thing: myLed
+    type: ledRGB
+    params: [ 'color', 'intensity?' ]
+
+  - thing: mySmartphone
+    type: touchSurface
+    requirements:
+      gestures: [ 'swipeUp', 'swipeDown' ]
+      multitouch: true
+
+  - thing: myPlayer
+    type: mediaPlayer
+    params: [ 'mediaurl', 'duration' ]
+    requirements:
+      codecs: [ 'h264', 'h265?', 'aac', 'mp3?' ]
+      formats: [ 'isobmff', 'ts?' ]
+      protocols: [ 'dash' ]
+
+  - thing: myFile
+    type: inputStorage
+    filepath: 'myApp:/myFile'
+    requirements:
+      mustExist: true
+
+  - thing: myFile2
+    type: outputStorage
+    filepath: 'myApp:/newFile'
+    requirements:
+       events: [ 'isCreated', 'isModified', 'isDeleted' ]
+    params: [ 'data' ]
+
+  - thing: myMonitoring
+    type: processor
+    lang: 'python3'
+    sourcepath: './path/to/file.py'
+#    code: |
+#      import time
+#      ts = time.time()
+#      print(ts)
+    params: [ 'temperature' ]
+      
+ workflows: #flow, eventflow
+
+  # Quando termômetro marcar mais que 33 graus
+  # e sensor de umidade marcar menos que 50%
+  # executa o script e liga a o fan
+  - workflow: w1
+    when:
+      - myThermometer: '[33, 40]'
+      - myUmiditySensor: '<50%'
+    do:
+      - myThermometer: read
+        reference: temp1
+      - myMonitoring: start
+        temperature: temp1
+      - eastFan: start
+
+  # Quando o smartphone receber swipeUp na tela
+  # a cor e intensidade do led são setadas para
+  # branca e 80%
+  - workflow: w2
+    when:
+      - mySmartphone: 'swipeUp' #match
+    do:
+      - myLed: start
+        color: '#ffffff' #tentar tirar os params das keys
+        intensity: '0.8'
+
+  # Quando o smartphone receber swipeDown na tela
+  # a cor e intensidade do led são setadas para
+  # travertino e 30%
+  - workflow: w3
+    when:
+      - mySmartphone: 'swipeDown'
+    do:
+      - myLed: start
+        color: '#fffde7'
+        intensity: '0.3'
+
+  # Quando o workflow2 ou workflow3 acontecer
+  # executa o script myMonitoring e salva no
+  # myDisk1 o arquivo localizado no caminho path/to/file
+  - workflow: w4
+    when:
+      - w2: stops
+      - w3: stops
+    do:
+      - myMonitoring: start
+      - myFile2: start
+
+  # Quando o myDisk2 detectar um novo arquivo
+  # salva no myDisk1 o arquivo do myDisk2
+  # Obs: o mesmo nome de arquivo é mantido
+  - workflow: w5
+    when:
+      - myFile2: isCreated
+    do:
+      - myFile: read
+        reference: nf
+      - myFile2: write
+        data: nf
+      - myThermometer: read
+        reference: temp5
+      - myMonitoring: start
+        temperature: temp5
+
+  # Quando o workflow1 ocorrer,o myPlayer deve
+  # apresentar o vídeo que está no path/to/file
+  # por um período de 60 segundos
+  - workflow: w6
+    when:
+      - w1: starts #starts, stops, pauses, resumes
+    do:
+      - myPlayer: start #stop, pause, resume
+        mediaurl: 'file://myApp/path/to/file'
+        duration: '50s'
+
+  # Quando o myPlayer alcançar o instante de
+  # 10 segundos de exibição o eastFan deve ser
+  # ligado e o myLed deve ser desligado
+  - workflow: w7
+    when:
+      - myPlayer: '=10s' #stops, starts, pauses, resumes
+    do:
+      - eastFan: start
+      - myLed: stop
+
+#  restrictions:
+  # - name: workflow2 or workflow3
