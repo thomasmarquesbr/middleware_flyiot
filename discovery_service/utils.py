@@ -35,8 +35,11 @@ def is_valid_ip(ip_addr):
 
 
 def get_address_ip():
-    hostname = socket.gethostname()
-    return str(socket.gethostbyname(hostname))
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    return s.getsockname()[0]
+    # hostname = socket.gethostname()
+    # return str(socket.gethostbyname(hostname))
 
 
 def is_reachable(host):

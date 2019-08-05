@@ -1,7 +1,6 @@
 from utils import *
 from const import *
 import sys
-import socket
 from time import sleep
 from zeroconf import ServiceInfo, Zeroconf
 

@@ -35,7 +35,11 @@ def save_new_resource_discovered(info):
 
     else:
         print("Thing encontrado:")
-        if info["entrypoint"] and len(list_data_management_service) > 0:
+        if "presentation_engine" in info['type']:
+            if info["entrypoint"] and len(list_data_management_service) > 0:
+                add_new_datamanagement_discovered_to_presentation_engine(info, list_data_management_service[0])
+                add_new_presentation_engine_to_data_management(info, list_data_management_service[0])
+        elif info["entrypoint"] and len(list_data_management_service) > 0:
             add_new_thing_discovered_to_data_management(list_data_management_service[0], info)
     print(json.dumps(info, indent=2))
 
@@ -55,6 +59,22 @@ def add_new_service_discovered_to_data_management(service, data_management_servi
             print(req.json())
         except requests.ConnectionError:
             print("Erro de conexão: "+data_management["entrypoint"]+"services")
+
+
+def add_new_datamanagement_discovered_to_presentation_engine(presentation_engine, data_management_service):
+    try:
+        req = requests.post(presentation_engine["entrypoint"]+"data_management", json=data_management_service, headers=headers)
+        print(req.json())
+    except requests.ConnectionError:
+        print("Erro de conexão: "+presentation_engine["entrypoint"]+"data_management")
+
+
+def add_new_presentation_engine_to_data_management(presentation_engine, data_management_service):
+    try:
+        req = requests.post(data_management_service['entrypoint']+'services', json=presentation_engine, headers=headers)
+        print(req.json())
+    except requests.ConnectionError:
+        print("Erro de conexão: "+data_management_service['entrypoint']+'services')
 
 
 def add_new_thing_discovered_to_data_management(data_management, thing):

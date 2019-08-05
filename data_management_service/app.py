@@ -8,6 +8,7 @@ from werkzeug.security import safe_str_cmp
 import datetime
 import sys
 import requests
+from bson.json_util import dumps
 
 # class User(object):
 #     def __init__(self, id, username, password):
@@ -54,7 +55,7 @@ def identity(payload):
 
 
 def save_thing(thing):
-    if thing['entrypoint']:
+    if 'entrypoint' in thing and not DEBUG:
         try:
             req = requests.get(thing['entrypoint'], headers=headers)
             info = req.json()
@@ -108,7 +109,8 @@ def get_hello():
     return jsonify({'message': 'Hello World'})
 
 
-## SERVICES ##
+###################################################### SERVICES ########################################################
+
 @app.route('/services', methods=['GET'])
 def get_services():
     services = [service for service in mongo.db.services.find()]
@@ -181,7 +183,8 @@ def delete_all_services():
     return json_response({'message': 'Services removed successfully'}, cls=MongoJsonEncoder)
 
 
-## THINGS ##
+####################################################### THINGS #########################################################
+
 @app.route('/things', methods=['GET'])
 def get_things():
     things = [thing for thing in mongo.db.things.find()]
@@ -252,54 +255,102 @@ def delete_all_things():
     return json_response({'message': 'Things removed successfully'}, cls=MongoJsonEncoder)
 
 
-# ## DEVICES ##
-# @app.route('/devices', methods=['GET'])
-# def get_devices():
-#     devices = [device for device in mongo.db.devices.find()]
-#     return json_response(devices, cls=MongoJsonEncoder), 200
-#
-#
-# @app.route('/devices/<device_id>', methods=['GET'])
-# def get_device(device_id):
-#     if not isinstance(device_id, str):
-#         abort(400)
-#     else:
-#         result = mongo.db.devices.find_one({'_id': ObjectId(device_id)})
-#         res = result if result else {}
-#         return json_response(res, cls=MongoJsonEncoder), 200
-#
-#
-# @app.route('/devices', methods=['POST'])
-# def add_device():
-#     device = request.json
-#     if not device:
-#         abort(400)
-#     mongo.db.devices.insert_one(device)
-#     return json_response(device, cls=MongoJsonEncoder), 201
-#
-#
-# @app.route('/devices/<device_id>', methods=['PUT'])
-# def update_device(device_id):
-#     device = request.json
-#     if not device or not isinstance(device_id, str):
-#         abort(400)
-#     else:
-#         result = mongo.db.devices.update_one(
-#             {'_id': ObjectId(device_id)}, {'$set': device})
-#         device['_id'] = ObjectId(device_id)
-#         res = device if result.matched_count > 0 else {}
-#         return json_response(res, cls=MongoJsonEncoder), 200
-#
-#
-# @app.route('/devices/<device_id>', methods=['DELETE'])
-# def delete_device(device_id):
-#     if not isinstance(device_id, str):
-#         abort(400)
-#     else:
-#         result = mongo.db.devices.delete_one({'_id': ObjectId(device_id)})
-#         if result.deleted_count is 0:
-#             abort(404)
-#         return json_response({'message': 'Device removed successfully'}, cls=MongoJsonEncoder)
+@app.route('/types', methods=['GET'])
+def get_types():
+    things = [thing for thing in mongo.db.things.find()]
+    types = []
+    for thing in things:
+        types.append(thing['type'])
+    return json_response(types, cls=MongoJsonEncoder), 200
+
+
+####################################################### EVENTS #########################################################
+
+def register_obervables_in_things(events):
+    for event in events:
+        if 'thing' in event.keys():
+            things = [thing for thing in mongo.db.things.find({'type': event['thing']})]
+            for thing in things:
+                try:
+                    req = requests.put(thing['entrypoint']+"observables", headers=headers)
+                    print(req.json)
+                except requests.ConnectionError:
+                    print("Erro de conexão: "+thing['entrypoint']+"observables")
+            print('')
+
+
+@app.route('/events', methods=['GET'])
+def get_events():
+    events = [event for event in mongo.db.events.find()]
+    return json_response(events, cls=MongoJsonEncoder), 200
+
+
+@app.route('/events', methods=['POST', 'PUT'])
+def add_events():
+    events = request.json
+    if not events:
+        abort(400)
+    result = mongo.db.events.insert_many(events)
+    register_obervables_in_things(events)
+    if len(result.inserted_ids) == len(events):
+        return json_response(events, cls=MongoJsonEncoder), 201
+    else:
+        return json_response({'error', 'Error in insert'}), 400
+
+
+def notify_presentation_engine(event_id):
+    presentation_engine = mongo.db.services.find_one({'type': 'presentation_engine'})
+    if not presentation_engine:
+        return False
+    try:
+        req = requests.put(presentation_engine['entrypoint']+'notification/'+event_id, headers=headers)
+        if req.json:
+            return True
+    except requests.ConnectionError:
+        print("Erro de conexão: "+presentation_engine['entrypoint']+"notification/"+event_id)
+        return False
+
+
+@app.route('/events/<event_id>', methods=['PUT'])
+def notify_event(event_id):
+    result = mongo.db.events.find_one({'id': event_id})
+    if not result:
+        abort(400)
+    if notify_presentation_engine(event_id):
+        return json_response({'message': 'Event notified successfully'}), 200
+    else:
+        return abort(400)
+
+
+@app.route('/events', methods=['DELETE'])
+def delete_events():
+    result = mongo.db.events.delete_many({})
+    if not result:
+        abort(400)
+    return json_response({'message': 'Events removed successfully'}, cls=MongoJsonEncoder)
+
+
+####################################################### ACTIONS ########################################################
+
+def send_actions_to_things(actions, things):
+    for thing in things:
+        try:
+            req = requests.put(thing['entrypoint']+'actions', json=actions, headers=headers)
+            print(req.json)
+        except requests.ConnectionError:
+            print(thing)
+            print(actions)
+            print("Erro de conexão: "+thing['entrypoint']+"actions")
+    return {'message': 'Actions sent'}
+
+
+@app.route('/actions/<thing_type>', methods=['PUT'])
+def do_action(thing_type):
+    actions = request.json
+    things = [thing for thing in mongo.db.things.find({'type': thing_type})]
+    return jsonify(send_actions_to_things(actions, things)), 201
+
+
 
 
 if __name__ == '__main__':

@@ -61,7 +61,7 @@ FlyIoTL:
   # executa o script e liga a o fan
   - workflow: w1
     when:
-      - myThermometer: '[33, 40]'
+      - myThermometer: '[33-40]'
       - myUmiditySensor: '<50%'
     do:
       - myThermometer: read

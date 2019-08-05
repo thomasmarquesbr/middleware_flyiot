@@ -32,10 +32,10 @@ def verify_availability_thing(thing):
             print("status "+thing['type']+": on")
     except requests.ConnectionError:
         print("status "+thing['type']+": off")
-        try:
-            requests.delete(data_management_service+"things/"+thing['id'], headers=headers)
-        except requests.ConnectionError:
-            print("Erro de conexão: "+data_management_service)
+        # try:
+        #     requests.delete(data_management_service+"things/"+thing['id'], headers=headers)
+        # except requests.ConnectionError:
+        #     print("Erro de conexão: "+data_management_service)
 
 
 if __name__ == '__main__':
