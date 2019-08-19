@@ -82,7 +82,7 @@ def add_new_thing_discovered_to_data_management(data_management, thing):
         req = requests.post(data_management['entrypoint']+"things", json=thing, headers=headers)
         print(req.json)
     except requests.ConnectionError:
-        print("Erro de conexão: " + data_management + "things")
+        print("Erro de conexão: "+data_management['entrypoint']+"things")
 
 
 def on_service_state_change(zeroconf: Zeroconf,

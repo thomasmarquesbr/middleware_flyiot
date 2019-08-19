@@ -55,7 +55,8 @@ def identity(payload):
 
 
 def save_thing(thing):
-    if 'entrypoint' in thing and not DEBUG:
+    print(thing)
+    if 'entrypoint' in thing.keys() and not DEBUG:
         try:
             req = requests.get(thing['entrypoint'], headers=headers)
             info = req.json()
@@ -71,8 +72,7 @@ def save_thing(thing):
 app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://{}:{}/{}".format(
     URL_MONGO, PORT_MONGO, DB_MONGO)
-if DEBUG:
-    app.debug = True
+app.debug = False
 app.config['SECRET_KEY'] = 'super-secret'
 app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(days=1)
 mongo = PyMongo(app)
@@ -220,6 +220,7 @@ def add_thing():
     if thing_exist:
         make_response({'message', 'Thing alread added'}, 304)
     else:
+        print(thing)
         save_thing(thing)
         return json_response(thing, cls=MongoJsonEncoder), 201
 
@@ -351,11 +352,12 @@ def do_action(thing_type):
     return jsonify(send_actions_to_things(actions, things)), 201
 
 
-
-
 if __name__ == '__main__':
     try:
-        app.run(port=PORT)
+        if DEBUG:
+            app.run(port=int(PORT))
+        else:
+            app.run(host='0.0.0.0', port=int(PORT))
     except KeyboardInterrupt:
         pass
     finally:

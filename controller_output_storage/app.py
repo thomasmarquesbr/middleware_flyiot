@@ -19,13 +19,7 @@ thing = ThingController()
 @app.route('/', methods=['GET'])
 def get_hello():
     info = {
-        'actions': {
-            'turn': ['on', 'off'],
-            'measurement': 'Integer'
-        },
-        'measurement': {
-            'measurement': 'Integer'
-        }
+        'events': ['isCreated', 'isModified', 'isDeleted']
     }
     return make_response(jsonify(info), 200)
 
@@ -46,7 +40,6 @@ def action_turn():
 
 @app.route('/obervables', methods=['PUT'])
 def observe():
-    # thing.observe(notify_event())
     return make_response({'message': 'Observable registered'}, 200)
 
 

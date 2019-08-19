@@ -1,0 +1,93 @@
+FlyIoTL:
+
+  things:
+
+    - thing: myPlayer
+      type: mediaPlayer
+      params: ['mediaurl']
+      requirements: 
+        codecs: ['h264', 'aac', 'mp3?']
+        formats: ['ts']
+        protocols: ['dash']
+
+    - thing: myTouchSurface
+      type: touchSurface
+      requirements:
+        gestures: [ 'swipeUp', 'swipeDown', 'swipeLeft', 'swipeRight' ]
+        multitouch: true
+
+    - thing: myLed
+      type: ledRGB
+      params: ['color', 'intensity']
+
+    - thing: myButton
+      type: button
+
+    - thing: myFile
+      type: outputStorage
+      filepath: 'app:/log.txt'
+
+    - thing: myScript
+      type: processor
+      lang: 'python3'
+      sourcepath: './scripts/start.py'
+
+  workflows:
+
+    - workflow: w1
+      when: 
+        - myButton: starts
+      do:
+        - myPlayer: start
+          mediaurl: 'rtsp://10.10.10.207:5544/'
+        - myLed: start
+          color: '#ff0000'
+
+    - workflow: w2
+      when: 
+        - myButton: starts
+        - w1: starts
+      do: 
+        - myPlayer: stop
+        - myLed: stop
+
+    - workflow: w3
+      when: 
+        - w1: starts
+        - myTouchSurface: swipeUp
+      do: 
+        - myLed: 'start'
+          intensity: '1.0'
+        - myScript: start
+
+    - workflow: w4
+      when: 
+        - w1: starts
+        - myTouchSurface: swipeDown
+      do: 
+        - myLed: 'start'
+          intensity: '0.2'
+        - myScript: start
+
+    - workflow: w5
+      when: 
+        - myPlayer: pauses
+      do:
+        - myLed: 'start'
+          color: '#ffff00'
+        - myPlayer: read
+          reference: currenttime
+        - myFile: 'write'
+          data: 'currenttime'
+
+    - workflow: w6
+      when:
+        - w2: stops
+      do:
+        - myLed: stop
+        - myTouchSurface: stop
+
+
+
+    
+    

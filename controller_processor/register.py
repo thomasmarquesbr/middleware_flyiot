@@ -1,6 +1,6 @@
+import sys
 from utils import *
 from const import *
-import sys
 from time import sleep
 from zeroconf import ServiceInfo, Zeroconf
 
@@ -12,7 +12,7 @@ ENTRYPOINT = "/"
 
 data = {
     "id": ID,
-    "type": SERVICE_TYPE,
+    "type": THING_TYPE,
     # "entrypoint": "http://"+ADDRESS+":"+PORT+ENTRYPOINT
     "entrypoint": ("http://localhost:" if DEBUG else "http://"+ADDRESS+":")+PORT+ENTRYPOINT
 }
@@ -23,7 +23,7 @@ if __name__ == '__main__':
                                socket.inet_aton(ADDRESS), int(PORT), 0, 0,
                                data, "ash-2.local.")
     zeroconf = Zeroconf()
-    print("Registro de um " + SERVICE_TYPE + "(" + ID + ")" + ", press Ctrl-C to exit...")
+    print("Registro de um " + THING_TYPE + "(" + ID + ")" + ", press Ctrl-C to exit...")
     zeroconf.register_service(service_info)
     try:
         while True:

@@ -20,7 +20,10 @@ def get_hello():
 
 if __name__ == '__main__':
     try:
-        app.run(port=int(PORT))
+        if DEBUG:
+            app.run(port=int(PORT))
+        else:
+            app.run(host='0.0.0.0', port=int(PORT))
     except KeyboardInterrupt:
         pass
     finally:
