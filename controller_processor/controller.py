@@ -1,11 +1,30 @@
 import asyncio
 import subprocess
 import signal
-from utils import get_extension, extract_file
+import requests
+from const import headers
+from util import get_extension, extract_file
 
 
 def signal_handling(self, signum, frame):
     print("signal_handling")
+
+
+data_management_service = None
+events = {}
+
+
+def notify_event(event):
+    global events
+    global data_management_service
+    try:
+        if event in events.keys():
+            # print(data_management_service+'events/'+events[event]['id'])
+            req = requests.put(data_management_service+'events/'+str(events[event]['id']), headers=headers)
+            print(req.json)
+            del events[event]
+    except requests.ConnectionError:
+        print('Erro de conexão ')
 
 
 class ThingController(object):
@@ -15,15 +34,19 @@ class ThingController(object):
         self.__STOPS = False
     #     Configurar Controller
 
-    # async def observe(self, observables):
-    #     print("Observe element")
-    #     await asyncio.sleep(0.01)
-    #     for observable, value in observables:
-    #         if observable is 'measurement':
-    #             self.__start_observe_measurement(value)
-    #         else:
-    #             return False
-    #     return True
+    def observe(self, observable):
+        print("Observe element:")
+        print(observable)
+        if 'condition' in observable.keys():
+            if 'starts' in observable['condition']:
+                self.__STARTS = True
+                events[observable['condition']] = observable
+            elif 'stops' in observable['condition']:
+                self.__STOPS = True
+                events[observable['condition']] = observable
+            else:
+                return False
+        return True
 
     def actions(self, actions):
         for key, value in actions.items():
@@ -56,14 +79,20 @@ class ThingController(object):
         return {'message': 'ok'}
 
     def execute_file(self, filename):
+        global data_management_service
         extension = get_extension(filename)
         if extension == 'py':
             sub = subprocess.Popen(["python3.7", filename])
+            if self.__STARTS and data_management_service:
+                notify_event('starts')
             stdout = sub.communicate()
-            if self.__STOPS:
-                print("teste")
-            # signal.signal(signal.SIGCHLD, signal_handling)
+            if self.__STOPS and data_management_service:
+                notify_event('stops')
         elif extension == 'gz' or extension == 'tar':
             extract_file(filename)
+
+    def set_data_management(self, data_management):
+        global data_management_service
+        data_management_service = data_management
 
 

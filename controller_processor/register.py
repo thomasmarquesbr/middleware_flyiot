@@ -1,6 +1,7 @@
 import sys
-from utils import *
+from util import get_address_ip
 from const import *
+import socket
 from time import sleep
 from zeroconf import ServiceInfo, Zeroconf
 
