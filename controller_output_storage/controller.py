@@ -1,13 +1,25 @@
 import os
 from pathlib import Path
+import requests
+from const import *
 
-
-def notifyEvent(event):
-    pass
 
 data_management_service = None
 events = {}
 
+
+def notify_event(event):
+    global events
+    global data_management_service
+    try:
+        if event in events.keys():
+            # print(data_management_service+'events/'+events[event]['id'])
+            req = requests.put(data_management_service+'events/'+str(events[event]['id']), headers=headers)
+            print(req.json)
+            del events[event]
+    except requests.ConnectionError:
+        print('Erro de conexão ')
+        
 
 class ThingController(object):
     def __init__(self):
@@ -91,16 +103,16 @@ class ThingController(object):
             if mode == 'a':
                 prefix = '\n'
                 if self.__IS_MODIFIED and data_management_service:
-                    notifyEvent('isModified')
+                    notify_event('isModified')
             else:
                 if self.__IS_MODIFIED and data_management_service:
-                    notifyEvent('isCreated')
+                    notify_event('isCreated')
             if self.__STARTS and data_management_service:
-                notifyEvent('starts')
+                notify_event('starts')
             file.write(prefix+value)
             file.close()
             if self.__STOPS and data_management_service:
-                notifyEvent('stops')
+                notify_event('stops')
         return {'message': 'ok'}
 
     def __read(self, filepath):
