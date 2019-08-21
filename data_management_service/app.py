@@ -273,7 +273,8 @@ def register_obervables_in_things(events):
             things = [thing for thing in mongo.db.things.find({'type': event['thing']})]
             for thing in things:
                 try:
-                    req = requests.put(thing['entrypoint']+"observables", headers=headers)
+                    del thing['_id']
+                    req = requests.post(thing['entrypoint']+"observables", json=event, headers=headers)
                     print(req.json)
                 except requests.ConnectionError:
                     print("Erro de conexão: "+thing['entrypoint']+"observables")
@@ -312,13 +313,15 @@ def notify_presentation_engine(event_id):
         return False
 
 
-@app.route('/events/<event_id>', methods=['PUT'])
+@app.route('/events/<event_id>', methods=['PUT', 'GET'])
 def notify_event(event_id):
+    print(event_id)
     result = mongo.db.events.find_one({'id': event_id})
+    print(result)
     if not result:
         abort(400)
     if notify_presentation_engine(event_id):
-        return json_response({'message': 'Event notified successfully'}), 200
+        return make_response(jsonify({'message': 'Event notified successfully'}), 200)
     else:
         return abort(400)
 

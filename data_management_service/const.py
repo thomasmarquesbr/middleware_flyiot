@@ -11,4 +11,4 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-DEBUG = True
+DEBUG = False
