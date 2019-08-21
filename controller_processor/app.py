@@ -53,7 +53,6 @@ def upload_file():
     if file and get_extension(file.filename) in ALLOWED_EXTENSIONS:
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        # execute_file(filename)
         thing.execute_file(app.config['UPLOAD_FOLDER']+filename)
         return jsonify({'message': 'success'})
     else:

@@ -5,6 +5,9 @@ from pathlib import Path
 def notifyEvent(event):
     pass
 
+data_management_service = None
+events = {}
+
 
 class ThingController(object):
     def __init__(self):
@@ -14,19 +17,30 @@ class ThingController(object):
         self.__IS_DELETED = False
         self.__STARTS = False
         self.__STOPS = False
-        self.__PAUSES = False
-        self.__RESUMES = False
     #     Configurar Controller
 
-    # async def observe(self, observables):
-    #     print("Observe element")
-    #     await asyncio.sleep(0.01)
-    #     for observable, value in observables:
-    #         if observable is 'measurement':
-    #             self.__start_observe_measurement(value)
-    #         else:
-    #             return False
-    #     return True
+    def observe(self, observable):
+        print("Observe element:")
+        print(observable)
+        if 'condition' in observable.keys():
+            if 'starts' in observable['condition']:
+                self.__STARTS = True
+                events[observable['condition']] = observable
+            elif 'stops' in observable['condition']:
+                self.__STOPS = True
+                events[observable['condition']] = observable
+            elif 'isCreated' in observable['condition']:
+                self.__IS_CREATED = True
+                events[observable['condition']] = observable
+            elif 'isModified' in observable['condition']:
+                self.__IS_MODIFIED = True
+                events[observable['condition']] = observable
+            elif 'isDeleted' in observable['condition']:
+                self.__IS_DELETED = True
+                events[observable['condition']] = observable
+            else:
+                return False
+        return True
 
     def actions(self, actions):
         for key, value in actions.items():
@@ -41,7 +55,8 @@ class ThingController(object):
             elif key == 'write':
                 self.__write(actions['filepath'], value)
             elif key == 'read':
-                data = self.__read()
+                data = self.__read(value)  # value is filepath
+                return data
             elif key == 'filepath':
                 pass
             else:
@@ -65,6 +80,7 @@ class ThingController(object):
         return {'message': 'ok'}
 
     def __write(self, filepath, value):
+        global data_management_service
         filepath = filepath.replace(":/", "/")
         path = Path(filepath).parent
         if not os.path.exists(path):
@@ -74,19 +90,29 @@ class ThingController(object):
             prefix = ''
             if mode == 'a':
                 prefix = '\n'
-                if self.__IS_MODIFIED:
+                if self.__IS_MODIFIED and data_management_service:
                     notifyEvent('isModified')
             else:
-                if self.__IS_MODIFIED:
+                if self.__IS_MODIFIED and data_management_service:
                     notifyEvent('isCreated')
+            if self.__STARTS and data_management_service:
+                notifyEvent('starts')
             file.write(prefix+value)
             file.close()
-            notifyEvent('starts')
+            if self.__STOPS and data_management_service:
+                notifyEvent('stops')
         return {'message': 'ok'}
 
-    def __read(self):
-        print('read -> read:')
-        return 'measurement'
+    def __read(self, filepath):
+        global data_management_service
+        filepath = filepath.replace(":/", "/")
+        try:
+            with open(filepath, 'r') as file:
+                content = file.read()
+                return {'data': content}
+        except EnvironmentError:
+            return None
 
-    def __start_observe_measurement(self, value):
-        pass
+    def set_data_management(self, data_management):
+        global data_management_service
+        data_management_service = data_management
