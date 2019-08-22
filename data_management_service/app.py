@@ -339,7 +339,7 @@ def delete_events():
 def send_actions_to_things(actions, things):
     for thing in things:
         try:
-            req = requests.put(thing['entrypoint']+'actions', json=actions, headers=headers)
+            req = requests.post(thing['entrypoint']+'actions', json=actions, headers=headers)
             print(req.json)
         except requests.ConnectionError:
             print(thing)
@@ -348,7 +348,7 @@ def send_actions_to_things(actions, things):
     return {'message': 'Actions sent'}
 
 
-@app.route('/actions/<thing_type>', methods=['PUT'])
+@app.route('/actions/<thing_type>', methods=['PUT', 'POST'])
 def do_action(thing_type):
     actions = request.json
     things = [thing for thing in mongo.db.things.find({'type': thing_type})]

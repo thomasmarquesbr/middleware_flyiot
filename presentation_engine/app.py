@@ -101,10 +101,6 @@ def notification(event_id):
 
 if __name__ == '__main__':
     try:
-        # stop_threads = False
-        # t1 = threading.Thread(target=run)
-        # t1.start()
-        # time.sleep(1)
         if DEBUG:
             app.run(port=int(PORT))
         else:

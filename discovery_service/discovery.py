@@ -20,7 +20,7 @@ headers = {
 def save_new_resource_discovered(info):
     global list_data_management_service
     if "service" in info["type"]:
-        print("Service encontrado:")
+        print("Service encontrado: "+info['type'])
         if "data_management" in info["type"]:
             list_data_management_service.append(info)
         elif "management_service" in info["type"]:
@@ -41,13 +41,14 @@ def save_new_resource_discovered(info):
                 add_new_presentation_engine_to_data_management(info, list_data_management_service[0])
         elif info["entrypoint"] and len(list_data_management_service) > 0:
             add_new_thing_discovered_to_data_management(list_data_management_service[0], info)
-            if 'processor' in info['type']:
-                add_data_management_to_new_thing_processor(info, list_data_management_service[0])
+            add_data_management_to_new_thing(info, list_data_management_service[0])
     print(json.dumps(info, indent=2))
 
 
-def add_data_management_to_new_thing_processor(info, data_management_service):
+def add_data_management_to_new_thing(info, data_management_service):
     try:
+        print(data_management_service)
+        print(info["entrypoint"]+"data_management")
         req = requests.post(info["entrypoint"]+"data_management", json=data_management_service, headers=headers)
         print(req.json())
     except requests.ConnectionError:
