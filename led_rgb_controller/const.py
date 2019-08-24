@@ -1,0 +1,4 @@
+MIDDLEWARE_NAME = "FlyIoT"
+THING_TYPE = "ledRGB"
+
+DEBUG = False
