@@ -5,7 +5,6 @@ FlyIoTL:
     - thing: myPlayer
       type: mediaPlayer
       params: ['mediaurl']
-      addr: '10-FB-75-65-9A-8B'
       requirements: 
         codecs: ['h264', 'aac', 'mp3?']
         formats: ['ts']
@@ -13,7 +12,6 @@ FlyIoTL:
 
     - thing: myTouchSurface
       type: touchSurface
-      addr: 'E7-39-AB-C5-E6-F7'
       requirements:
         gestures: [ 'swipeUp', 'swipeDown', 'swipeLeft', 'swipeRight' ]
         multitouch: true
@@ -21,23 +19,19 @@ FlyIoTL:
     - thing: myLed
       type: ledRGB
       params: ['color', 'intensity']
-      addr: 'E4-DF-60-B9-02-1F'
 
     - thing: myButton
       type: button
-      addr: '51-DA-94-58-D1-1E'
 
     - thing: myFile
       type: outputStorage
       filepath: 'app:/log.txt'
-      addr: '20-23-59-3E-51-C6'
       requirements:
         events: [ 'isCreated', 'isModified', 'isDeleted' ]
       params: [ 'data' ]
 
     - thing: myScript
       type: processor
-      addr: '68-1C-DC-03-38-30'
       lang: 'Python3'
       sourcepath: './scripts/start.py'
 
@@ -96,8 +90,3 @@ FlyIoTL:
         - myLed: stop
         - myTouchSurface: stop
         - myScript: start
-
-
-
-    
-    
