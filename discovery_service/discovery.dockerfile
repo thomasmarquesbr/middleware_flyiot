@@ -9,6 +9,6 @@ RUN pip3 install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 # Apenas para imagem de produção
-# COPY . /usr/src/app/
+COPY . /usr/src/app/
 
-CMD ["python3.7", "main.py"]
+ENTRYPOINT ["python3.7", "main.py"]

@@ -1,4 +1,4 @@
 MIDDLEWARE_NAME = "FlyIoT"
 SERVICE_TYPE = "management_service"
 
-DEBUG = True
+DEBUG = False

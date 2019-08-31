@@ -7,8 +7,8 @@ from zeroconf import ServiceInfo, Zeroconf
 
 
 ID = sys.argv[1]
-ADDRESS = get_address_ip()
 PORT = sys.argv[2]
+ADDRESS = sys.argv[3]
 ENTRYPOINT = "/"
 
 data = {

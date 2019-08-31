@@ -30,6 +30,7 @@ from bson.json_util import dumps
 
 ID = sys.argv[1]
 PORT = sys.argv[2]
+ADDRESS = sys.argv[3]
 
 # os.system("python3 register.py " + ID + " " + PORT + " &")
 print("Iniciando Data Management Service")
@@ -71,7 +72,7 @@ def save_thing(thing):
 
 app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://{}:{}/{}".format(
-    URL_MONGO, PORT_MONGO, DB_MONGO)
+    ADDRESS, PORT_MONGO, DB_MONGO)
 app.debug = False
 app.config['SECRET_KEY'] = 'super-secret'
 app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(days=1)

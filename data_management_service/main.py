@@ -4,6 +4,7 @@ import uuid
 import sys
 import signal
 import random
+from utils import *
 
 
 def signal_handling(signum, frame):
@@ -15,10 +16,11 @@ def signal_handling(signum, frame):
 
 ID = str(uuid.uuid1())
 PORT = str(5001)# if DEBUG else random.randint(49152, 65535))
+ADDRESS = sys.argv[1] if len(sys.argv) > 1 else get_address_ip()
 
 subprocesses = [
-    subprocess.Popen(["python3.7", "register.py"] + [ID, PORT]),
-    subprocess.Popen(["python3.7", "app.py"] + [ID, PORT])
+    subprocess.Popen(["python3.7", "register.py"] + [ID, PORT, ADDRESS]),
+    subprocess.Popen(["python3.7", "app.py"] + [ID, PORT, ADDRESS])
 ]
 
 signal.signal(signal.SIGINT, signal_handling)
