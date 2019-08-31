@@ -218,7 +218,7 @@ def add_thing():
         abort(400)
     thing_exist = mongo.db.things.find_one({'id': thing['id']})
     if thing_exist:
-        make_response({'message', 'Thing alread added'}, 304)
+        make_response(jsonify({'message', 'Thing alread added'}), 304)
     else:
         print(thing)
         save_thing(thing)
@@ -273,7 +273,9 @@ def register_obervables_in_things(events):
             things = [thing for thing in mongo.db.things.find({'type': event['thing']})]
             for thing in things:
                 try:
-                    del thing['_id']
+                    if '_id' in event.keys():
+                        del event['_id']
+                    print(event)
                     req = requests.post(thing['entrypoint']+"observables", json=event, headers=headers)
                     print(req.json)
                 except requests.ConnectionError:

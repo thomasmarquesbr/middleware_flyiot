@@ -1,0 +1,35 @@
+FlyIoTL:
+
+  things:
+
+    - thing: myPlayer
+      type: mediaPlayer
+      params: ['mediaurl']
+      addr: '10-FB-75-65-9A-8B'
+      requirements:
+        codecs: ['h264', 'aac', 'mp3?']
+        formats: ['ts']
+        protocols: ['dash', 'rtsp']
+
+    - thing: myTouchSurface
+      type: touchSurface
+      addr: 'E7-39-AB-C5-E6-F7'
+      requirements:
+        gestures: [ 'swipeUp', 'swipeDown', 'swipeLeft', 'swipeRight' ]
+        multitouch: true
+
+  workflows:
+
+    - workflow: w1
+      when:
+        - myTouchSurface: 'swipeUp'
+      do:
+        - myPlayer: start
+          mediaurl: 'http://videocdn.bodybuilding.com/video/mp4/62000/62792m.mp4'
+
+    - workflow: w2
+      when:
+        - myTouchSurface: 'swipeDown'
+        - w1: starts
+      do:
+        - myPlayer: stop
