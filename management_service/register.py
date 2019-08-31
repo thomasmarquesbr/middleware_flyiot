@@ -1,4 +1,4 @@
-from utils import *
+from util import *
 from const import *
 import sys
 from time import sleep

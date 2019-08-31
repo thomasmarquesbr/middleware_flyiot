@@ -6,7 +6,7 @@ import time
 from flask import Flask, jsonify, abort, request
 
 from const import *
-from utils import *
+from util import *
 
 
 def signal_handling(signum, frame):

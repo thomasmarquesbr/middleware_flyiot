@@ -4,7 +4,7 @@ import subprocess
 import sys
 import uuid
 import random
-from utils import get_address_ip
+from util import get_address_ip
 
 
 def signal_handling(signum, frame):
