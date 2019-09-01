@@ -4,6 +4,7 @@ import subprocess
 import sys
 import uuid
 import random
+import requests
 from util import get_address_ip
 
 
@@ -22,6 +23,27 @@ subprocesses = [
     subprocess.Popen(["python3.7", "register.py"] + [ID, PORT, ADDRESS]),
     subprocess.Popen(["python3.7", "app.py"] + [ID, PORT])
 ]
+
+
+def start_containers():
+    try:
+        files = {'file': open('start_data_management_service.py', 'rb')}
+        req = requests.post('http://'+ADDRESS+':8000/actions', files=files)
+        print(req.json())
+    except requests.ConnectionError:
+        print('Erro ao conextar em '+'http://'+ADDRESS+':8000/actions')
+    try:
+        files = {'file': open('start_discovery_service.py', 'rb')}
+        req = requests.post('http://'+ADDRESS+':8000/actions', files=files)
+        print(req.json())
+    except requests.ConnectionError:
+        print('Erro ao conextar em '+'http://'+ADDRESS+':8000/actions')
+
+
+if len(sys.argv) > 2:
+    start_containers()
+    # subprocess.Popen(["python3.7", "./containers/start_discovery_service.py"])
+    # subprocess.Popen(["python3.7", "./containers/start_data_management_service.py"])
 
 signal.signal(signal.SIGINT, signal_handling)
 while True:

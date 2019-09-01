@@ -1,5 +1,5 @@
-requests==2.5.0
+docker==4.0.2
 flask==1.0.2
 zeroconf==0.21.3
 bson==0.5.8
-docker==4.0.2
+requests==2.5.0

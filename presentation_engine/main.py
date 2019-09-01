@@ -21,7 +21,8 @@ print(FILE_PATH)
 
 subprocesses = [
     subprocess.Popen(["python3.7", "register.py"] + [ID, PORT]),
-    subprocess.Popen(["python3.7", "app.py"] + [ID, PORT, FILE_PATH])
+    subprocess.Popen(["python3.7", "app.py"] + [ID, PORT, FILE_PATH]),
+    subprocess.Popen(["python3.7", "micro_discovery.py"])
 ]
 
 signal.signal(signal.SIGINT, signal_handling)

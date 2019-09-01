@@ -46,9 +46,12 @@ def add_data_management():
 def upload_file():
     global thing
     if 'file' not in request.files:
+        print('acá1')
         abort(400)
     file = request.files['file']
+    print(file)
     if file.filename == '':
+        print('aca2')
         abort(400)
     if file and get_extension(file.filename) in ALLOWED_EXTENSIONS:
         filename = secure_filename(file.filename)
@@ -56,6 +59,7 @@ def upload_file():
         thing.execute_file(app.config['UPLOAD_FOLDER']+filename)
         return jsonify({'message': 'success'})
     else:
+        print('aca3')
         abort(400)
 
 

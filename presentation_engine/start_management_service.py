@@ -12,6 +12,5 @@ ADDRESS = get_address_ip()
 client = docker.from_env()
 
 print('Iniciando container')
-container_db = client.containers.run("mvertes/alpine-mongo", ADDRESS, detach=True, ports={"27017": "27017"})
-container_service = client.containers.run("thomasmarquesbr/flyiot_datamanagement:0.2", ADDRESS, detach=True, ports={"5001": "5001"})
+container = client.containers.run("thomasmarquesbr/flyiot_management", ADDRESS+' startall', detach=True, ports={"5002": "5002"})
 print('Container inicializado')

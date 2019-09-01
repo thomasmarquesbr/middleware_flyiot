@@ -4,6 +4,7 @@ import signal
 import requests
 from const import headers
 from util import get_extension, extract_file
+import os
 
 
 def signal_handling(self, signum, frame):
@@ -88,6 +89,7 @@ class ThingController(object):
             stdout = sub.communicate()
             if self.__STOPS and data_management_service:
                 notify_event('stops')
+            os.remove(filename)
         elif extension == 'gz' or extension == 'tar':
             extract_file(filename)
 

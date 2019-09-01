@@ -1,0 +1,41 @@
+version: '3'
+services:
+
+  management:
+    image: thomasmarquesbr/flyiot_management
+    container_name: management
+    ports:
+      - 5002:5002
+    command: "$$(hostname -I | cut -f1 -d' ')"
+
+  mongodb:
+    image: mvertes/alpine-mongo
+    container_name: database
+    ports:
+      - 27017:27017
+#    volumes:
+#      - ./../data_management_service/db:/data/db
+
+  data_management:
+    image: thomasmarquesbr/flyiot_datamanagement
+    container_name: data_management
+    ports:
+      - 5001:5001
+    command: "$$(hostname -I | cut -f1 -d' ')"
+    depends_on:
+      - mongodb
+      - management
+
+  discovery:
+    image: thomasmarquesbr/flyiot_discovery
+    container_name: discovery
+    ports:
+      - 5000:5000
+    command: "$$(hostname -I | cut -f1 -d' ')"
+    depends_on:
+      - management
+      - data_management
+
+#networks:
+#  dev-network:
+#    driver: bridge
