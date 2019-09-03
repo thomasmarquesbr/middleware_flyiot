@@ -6,7 +6,9 @@ services:
     container_name: management
     ports:
       - 5002:5002
-    command: "$$(hostname -I | cut -f1 -d' ')"
+    environment:
+      - HOSTNAME=${HOSTNAME}
+    command: ${HOSTNAME}
 
   mongodb:
     image: mvertes/alpine-mongo
@@ -21,7 +23,9 @@ services:
     container_name: data_management
     ports:
       - 5001:5001
-    command: "$$(hostname -I | cut -f1 -d' ')"
+    environment:
+      - HOSTNAME=${HOSTNAME}
+    command: ${HOSTNAME}
     depends_on:
       - mongodb
       - management
@@ -31,7 +35,9 @@ services:
     container_name: discovery
     ports:
       - 5000:5000
-    command: "$$(hostname -I | cut -f1 -d' ')"
+    environment:
+      - HOSTNAME=${HOSTNAME}
+    command: ${HOSTNAME}
     depends_on:
       - management
       - data_management
