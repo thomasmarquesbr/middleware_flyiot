@@ -276,8 +276,9 @@ def register_obervables_in_things(events):
                 try:
                     if '_id' in event.keys():
                         del event['_id']
-                    print(event)
                     req = requests.post(thing['entrypoint']+"observables", json=event, headers=headers)
+                    print("Evento registrado:")
+                    print(event)
                     print(req.json)
                 except requests.ConnectionError:
                     print("Erro de conexão: "+thing['entrypoint']+"observables")
@@ -310,6 +311,7 @@ def notify_presentation_engine(event_id):
     try:
         req = requests.put(presentation_engine['entrypoint']+'notification/'+event_id, headers=headers)
         if req.json:
+            print("Notificando Execution Engine: Event "+event_id)
             return True
     except requests.ConnectionError:
         print("Erro de conexão: "+presentation_engine['entrypoint']+"notification/"+event_id)
@@ -343,10 +345,10 @@ def send_actions_to_things(actions, things):
     for thing in things:
         try:
             req = requests.post(thing['entrypoint']+'actions', json=actions, headers=headers)
+            print("Enviando action para o thing: " + thing["type"])
+            print(actions)
             print(req.json)
         except requests.ConnectionError:
-            print(thing)
-            print(actions)
             print("Erro de conexão: "+thing['entrypoint']+"actions")
     return {'message': 'Actions sent'}
 

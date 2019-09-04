@@ -1,0 +1,43 @@
+FlyIoTL:
+
+  things:
+
+    - thing: myPlayer
+      type: mediaPlayer
+      params: ['mediaurl', 'currenttime']
+      requirements:
+        codecs: ['h264', 'aac', 'mp3?']
+        formats: ['ts']
+        protocols: ['dash', 'rtsp']
+        events: ['read']
+
+    - thing: pushButton
+      type: button
+      requirements:
+        events: [ 'pressed' ]
+
+    - thing: myFile
+      type: outputStorage
+      filepath: 'app:/log.txt'
+      requirements:
+        events: [ 'isCreated', 'isModified', 'isDeleted' ]
+      params: [ 'data' ]
+
+  workflows:
+
+    - workflow: w1
+      when:
+        - pushButton: 'starts'
+      do:
+        - myPlayer: 'start'
+          mediaurl: 'https://www.radiantmediaplayer.com/media/bbb-360p.mp4'
+
+    - workflow: w2
+      when:
+        - w1: 'starts'
+        - myPlayer: '=10s'
+      do:
+        - myPlayer: read
+          reference: currenttime
+        - myFile: 'write'
+          data: 'currenttime'

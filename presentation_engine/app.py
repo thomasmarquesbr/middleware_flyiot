@@ -159,16 +159,46 @@ def trigger_actions(actions_workflow):
     global data_management_service
     global parser
     things = parser.things
+    print(things)
     # print(things)
-    for action in actions_workflow:
+    actions_iterator = enumerate(actions_workflow)
+    for i, action in actions_iterator:
         my_thing = next(iter(action))
         # print(things[my_thing]['type'])
-        try:
-            print('action-> '+str(action))
-            req = requests.put(data_management_service+'actions/'+my_thing, json=action, headers=headers)
-            print(req.json())
-        except requests.ConnectionError:
-            print('Erro ao conectar em: '+data_management_service+'actions/'+my_thing)
+        thing_type = things[my_thing]['type']
+        # print(thing_type)
+
+        if 'reference' in action.keys():
+            print(actions_workflow[i])
+            try:   Get Current Time do mediaplayer
+                action_thing = {'action': action[my_thing]} # {'mediaPlayer': 'read', ...}
+                for key, value in action.items():
+                    if key is not my_thing:
+                        action_thing[key] = value
+                print(action_thing)
+                # req = requests.put(data_management_service+'actions/'+thing_type, json=action_thing, headers=headers)
+                # print(req.json())
+                data = "valor aki"
+
+                my_thing2 = actions_workflow[i+1]
+                next(actions_iterator)
+                print(my_thing2)
+                # action_thing2 = {'action': action[my_thing]}  # {'mediaPlayer': 'read', ...}
+
+            except requests.ConnectionError:
+                print('Erro ao conectar em: ' + data_management_service + 'actions/' + my_thing)
+        else:
+            try:
+                action_thing = {'action': action[my_thing]}
+                for key, value in action.items():
+                    if key is not my_thing:
+                        action_thing[key] = value
+                print('action-> '+str(action_thing))
+                req = requests.put(data_management_service+'actions/'+thing_type, json=action_thing, headers=headers)
+                # print('action-> '+thing_type+':  '+str(action))
+                print(req.json())
+            except requests.ConnectionError:
+                print('Erro ao conectar em: '+data_management_service+'actions/'+my_thing)
 
 
 if __name__ == '__main__':

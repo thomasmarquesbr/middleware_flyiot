@@ -9,6 +9,9 @@ services:
     environment:
       - HOSTNAME=${HOSTNAME}
     command: ${HOSTNAME}
+    depends_on:
+      - discovery
+      - data_management
 
   mongodb:
     image: mvertes/alpine-mongo
@@ -28,7 +31,7 @@ services:
     command: ${HOSTNAME}
     depends_on:
       - mongodb
-      - management
+      - discovery
 
   discovery:
     image: thomasmarquesbr/flyiot_discovery
@@ -38,9 +41,9 @@ services:
     environment:
       - HOSTNAME=${HOSTNAME}
     command: ${HOSTNAME}
-    depends_on:
-      - management
-      - data_management
+#    depends_on:
+#      - management
+#      - data_management
 
 #networks:
 #  dev-network:
