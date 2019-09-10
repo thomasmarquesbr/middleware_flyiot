@@ -170,27 +170,27 @@ def trigger_actions(actions_workflow):
 
         if 'reference' in action.keys():
             print(actions_workflow[i])
-            try:  # Get Current Time do mediaplayer
-                action_thing = {'action': action[my_thing]} # {'mediaPlayer': 'read', ...}
-                for key, value in action.items():
-                    if key is not my_thing:
-                        action_thing[key] = value
-                print(action_thing)
-                req = requests.put(data_management_service+'actions/'+thing_type, json=action_thing, headers=headers)
-                # print(req.json())
-                result = req.json()
-                print('result: '+str(result)) # result está errado  result: {'message': 'Actions sent'}
-                if 'reference' in result.keys():
-                    data = result['reference']
-
-                    my_thing2 = actions_workflow[i+1]
-                    next(actions_iterator)
-                    action_thing2 = {'action': action[my_thing]}  # {'mediaPlayer': 'read', ...}
-                    print('action_thing2'+str(action_thing2))
-                    print('my_thing2'+str(my_thing2))
-
-            except requests.ConnectionError:
-                print('Erro ao conectar em: ' + data_management_service + 'actions/' + my_thing)
+            # try:  # Get Current Time do mediaplayer
+            #     action_thing = {'action': action[my_thing]} # {'mediaPlayer': 'read', ...}
+            #     for key, value in action.items():
+            #         if key is not my_thing:
+            #             action_thing[key] = value
+            #     print(action_thing)
+            #     req = requests.put(data_management_service+'actions/'+thing_type, json=action_thing, headers=headers)
+            #     # print(req.json())
+            #     result = req.json()
+            #     print('result: '+str(result)) # result está errado  result: {'message': 'Actions sent'}
+            #     if 'reference' in result.keys():
+            #         data = result['reference']
+            #
+            #         my_thing2 = actions_workflow[i+1]
+            #         next(actions_iterator)
+            #         action_thing2 = {'action': action[my_thing]}  # {'mediaPlayer': 'read', ...}
+            #         print('action_thing2'+str(action_thing2))
+            #         print('my_thing2'+str(my_thing2))
+            #
+            # except requests.ConnectionError:
+            #     print('Erro ao conectar em: ' + data_management_service + 'actions/' + my_thing)
         else:
             try:
                 action_thing = {'action': action[my_thing]}
