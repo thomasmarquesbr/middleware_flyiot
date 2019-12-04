@@ -2,4 +2,4 @@ docker==4.0.2
 flask==1.0.2
 zeroconf==0.21.3
 bson==0.5.8
-requests==2.5.0
+requests==2.20.0
