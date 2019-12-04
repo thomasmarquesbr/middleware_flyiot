@@ -1,5 +1,5 @@
 zeroconf==0.21.3
 flask==1.0.2
-requests==2.5.0
+requests==2.20.0
 bson==0.5.8
 RPi.GPIO==0.7.0
